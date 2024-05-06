@@ -25,24 +25,6 @@ summary_df = df.groupby('DESCRIPTION').agg({
 
 
 
-# # Componente para mostrar os valores totais
-# total_values = html.Div([
-#     html.H3('Valores Totais'),
-#     html.P(f"Total NET_CREDIT_AMOUNT: {df['NET_CREDIT_AMOUNT'].sum()}"),
-#     # Adicionar outros totais aqui
-# ])
-
-# # Componente para mostrar o resumo de informações
-# summary_table = html.Div([
-#     html.H3('Resumo de Informações'),
-#     dash_table.DataTable(
-#         id='summary-table',
-#         columns=[{'name': col, 'id': col} for col in summary_df.columns],
-#         data=summary_df.to_dict('records')
-#     )
-# ])
-
-
 # Layout do aplicativo
 app.layout = html.Div([
 
