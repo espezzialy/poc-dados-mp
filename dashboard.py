@@ -2,24 +2,72 @@ import pandas as pd
 import plotly.express as px
 import dash
 from dash import dcc, html
+import dash_table
 
 # Carregar os dados do CSV para um DataFrame
-df = pd.read_csv('MERCADOPAGO.csv', sep=';', parse_dates=['DATE'])
+df = pd.read_csv('MERCADOPAGOFORMATTED.csv', sep=';', parse_dates=['DATE'])
 
 # Selecionar os dados relevantes
 df_summary = df[['DATE', 'DESCRIPTION', 'GROSS_AMOUNT', 'NET_CREDIT_AMOUNT', 'NET_DEBIT_AMOUNT', 'MP_FEE_AMOUNT', 'FINANCING_FEE_AMOUNT', 'SHIPPING_FEE_AMOUNT', 'TAXES_AMOUNT', 'COUPON_AMOUNT', 'PAYMENT_METHOD']]
 
 # Agrupar os dados por data
-df_grouped = df.groupby('DATE').sum().reset_index()
+df_grouped = df_summary.groupby('DATE').sum().reset_index()
 
-# Iniciar o aplicativo Dash
+# Iniciar o aplicativo Dash 
 app = dash.Dash(__name__)
+
+# Criar um resumo de informações
+summary_df = df.groupby('DESCRIPTION').agg({
+    'NET_CREDIT_AMOUNT': 'sum',
+    'NET_DEBIT_AMOUNT': 'sum',
+    'MP_FEE_AMOUNT': 'sum'
+}).reset_index()
+
+
+
+# # Componente para mostrar os valores totais
+# total_values = html.Div([
+#     html.H3('Valores Totais'),
+#     html.P(f"Total NET_CREDIT_AMOUNT: {df['NET_CREDIT_AMOUNT'].sum()}"),
+#     # Adicionar outros totais aqui
+# ])
+
+# # Componente para mostrar o resumo de informações
+# summary_table = html.Div([
+#     html.H3('Resumo de Informações'),
+#     dash_table.DataTable(
+#         id='summary-table',
+#         columns=[{'name': col, 'id': col} for col in summary_df.columns],
+#         data=summary_df.to_dict('records')
+#     )
+# ])
+
 
 # Layout do aplicativo
 app.layout = html.Div([
+
+    
+
+    # Adicionar outros totais aqui
+
+    html.H3('Resumo de Informações'),
+        dash_table.DataTable(
+            id='summary-table',
+            columns=[{'name': col, 'id': col} for col in summary_df.columns],
+            data=summary_df.to_dict('records')
+        ),
+
+
     html.H1("Dashboard de Transações"),
     
     html.H2("Resumo dos Valores Totais"),
+
+    html.P(f"Valor total GROSS: {df_grouped['GROSS_AMOUNT'].sum()}"),
+    html.P(f"Valor total NET_CREDIT: {df_grouped['NET_CREDIT_AMOUNT'].sum()}"),
+    html.P(f"Valor total NET_DEBIT: {df_grouped['NET_DEBIT_AMOUNT'].sum()}"),
+    html.P(f"Valor total TAXA MP: {df_grouped['MP_FEE_AMOUNT'].sum()}"),
+
+
     dcc.Graph(
         id='graph-summary',
         figure=px.line(df_grouped, x='DATE', y=['GROSS_AMOUNT', 'MP_FEE_AMOUNT', 'FINANCING_FEE_AMOUNT', 'SHIPPING_FEE_AMOUNT', 'TAXES_AMOUNT', 'COUPON_AMOUNT'], title='Valores Totais por Data')
